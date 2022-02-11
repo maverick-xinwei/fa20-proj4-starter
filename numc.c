@@ -287,6 +287,30 @@ PyObject *Matrix61c_repr(PyObject *self) {
  */
 PyObject *Matrix61c_add(Matrix61c* self, PyObject* args) {
     /* TODO: YOUR CODE HERE */
+
+    if (PyObject_TypeCheck(args, &Matrix61cType))
+    {
+      matrix* operand1 = ((Matrix61c*)args)->mat; 
+      matrix* res;
+      if (allocate_matrix(&res, operand1->rows, operand1->cols) !=0)
+      {
+        return NULL ;
+      }
+
+      if (add_matrix(res, self->mat, operand1)!=0)
+      {
+        return NULL;
+      }
+
+      Matrix61c* res_mat = (Matrix61c*)Matrix61c_new(&Matrix61cType, NULL, NULL);
+      res_mat->mat = res; 
+      
+      return res_mat;
+    }
+    else
+    {
+      return NULL;
+    }
 }
 
 /*
@@ -295,6 +319,29 @@ PyObject *Matrix61c_add(Matrix61c* self, PyObject* args) {
  */
 PyObject *Matrix61c_sub(Matrix61c* self, PyObject* args) {
     /* TODO: YOUR CODE HERE */
+    if (PyObject_TypeCheck(args, &Matrix61cType))
+    {
+      matrix* operand1 = ((Matrix61c*)args)->mat; 
+      matrix* res;
+      if (allocate_matrix(&res, operand1->rows, operand1->cols) !=0)
+      {
+        return NULL ;
+      }
+
+      if (sub_matrix(res, self->mat, operand1)!=0)
+      {
+        return NULL;
+      }
+
+      Matrix61c* res_mat = (Matrix61c*)Matrix61c_new(&Matrix61cType, NULL, NULL);
+      res_mat->mat = res; 
+      
+      return res_mat;
+    }
+    else
+    {
+      return NULL;
+    }
 }
 
 /*
@@ -303,6 +350,29 @@ PyObject *Matrix61c_sub(Matrix61c* self, PyObject* args) {
  */
 PyObject *Matrix61c_multiply(Matrix61c* self, PyObject *args) {
     /* TODO: YOUR CODE HERE */
+    if (PyObject_TypeCheck(args, &Matrix61cType))
+    {
+      matrix* operand1 = ((Matrix61c*)args)->mat; 
+      matrix* res;
+      if (allocate_matrix(&res, self->mat->rows, operand1->cols) !=0)
+      {
+        return NULL ;
+      }
+
+      if (mul_matrix(res, self->mat, operand1)!=0)
+      {
+        return NULL;
+      }
+
+      Matrix61c* res_mat = (Matrix61c*)Matrix61c_new(&Matrix61cType, NULL, NULL);
+      res_mat->mat = res; 
+      
+      return res_mat;
+    }
+    else
+    {
+      return NULL;
+    }
 }
 
 /*
@@ -310,6 +380,20 @@ PyObject *Matrix61c_multiply(Matrix61c* self, PyObject *args) {
  */
 PyObject *Matrix61c_neg(Matrix61c* self) {
     /* TODO: YOUR CODE HERE */
+      matrix* res;
+      if (allocate_matrix(&res, self->mat->rows, self->mat->cols) !=0)
+      {
+        return NULL ;
+      }
+
+
+      if (neg_matrix(res, self->mat) != 0)
+      {
+        return NULL; 
+      }
+
+      Matrix61c* res_mat = (Matrix61c*)Matrix61c_new(&Matrix61cType, NULL, NULL);
+      res_mat->mat = res; 
 }
 
 /*
@@ -317,6 +401,21 @@ PyObject *Matrix61c_neg(Matrix61c* self) {
  */
 PyObject *Matrix61c_abs(Matrix61c *self) {
     /* TODO: YOUR CODE HERE */
+      matrix* res;
+      if (allocate_matrix(&res, self->mat->rows, self->mat->cols) !=0)
+      {
+        return NULL ;
+      }
+
+
+      if (abs_matrix(res, self->mat) != 0)
+      {
+        return NULL; 
+      }
+
+      Matrix61c* res_mat = (Matrix61c*)Matrix61c_new(&Matrix61cType, NULL, NULL);
+      res_mat->mat = res; 
+    
 }
 
 /*
@@ -324,6 +423,28 @@ PyObject *Matrix61c_abs(Matrix61c *self) {
  */
 PyObject *Matrix61c_pow(Matrix61c *self, PyObject *pow, PyObject *optional) {
     /* TODO: YOUR CODE HERE */
+  if(PyLong_Check(pow))
+  {
+      matrix* res;
+      if (allocate_matrix(&res, self->mat->rows, self->mat->cols) !=0)
+      {
+        return NULL ;
+      }
+
+      if (pow_matrix(res, self->mat, PyLong_AsLong(pow))!=0)
+      {
+        return NULL;
+      }
+
+      Matrix61c* res_mat = (Matrix61c*)Matrix61c_new(&Matrix61cType, NULL, NULL);
+      res_mat->mat = res; 
+      
+      return res_mat;
+  }
+  else
+  {
+    return NULL;
+  }
 }
 
 /*
@@ -332,6 +453,16 @@ PyObject *Matrix61c_pow(Matrix61c *self, PyObject *pow, PyObject *optional) {
  */
 PyNumberMethods Matrix61c_as_number = {
     /* TODO: YOUR CODE HERE */
+    (binaryfunc) Matrix61c_add,
+    (binaryfunc) Matrix61c_sub,
+    (binaryfunc) Matrix61c_multiply,
+    NULL, //remainder
+    NULL, //divmod
+    (ternaryfunc) Matrix61c_pow,
+    (unaryfunc) Matrix61c_neg,
+    NULL, //positive
+    (unaryfunc)Matrix61c_abs
+
 };
 
 
@@ -343,6 +474,21 @@ PyNumberMethods Matrix61c_as_number = {
  */
 PyObject *Matrix61c_set_value(Matrix61c *self, PyObject* args) {
     /* TODO: YOUR CODE HERE */
+    PyObject *col = NULL;
+    PyObject *row = NULL;
+    PyObject *val = NULL;
+    if (PyArg_UnpackTuple(args, "args", 3, 3, &row, &col, &val))
+    {
+        set(self->mat, PyLong_AsLong(row), PyLong_AsLong(col), PyFloat_AsDouble(val));
+        //return Py_None;
+        Py_RETURN_NONE;
+       
+    }
+    else
+    {
+      PyErr_SetString(PyExc_TypeError, "Failed to unpack args when calling  set function!");
+      return NULL;
+    }
 }
 
 /*
@@ -352,6 +498,16 @@ PyObject *Matrix61c_set_value(Matrix61c *self, PyObject* args) {
  */
 PyObject *Matrix61c_get_value(Matrix61c *self, PyObject* args) {
     /* TODO: YOUR CODE HERE */
+    PyObject *col = NULL;
+    PyObject *row = NULL;
+    if (PyArg_UnpackTuple(args, "args", 2, 2, &row, &col))
+    {
+      return PyFloat_FromDouble(get(self->mat, PyLong_AsLong(row), PyLong_AsLong(col))); 
+    }
+    else
+    {
+      return NULL;
+    }
 }
 
 /*
@@ -362,6 +518,8 @@ PyObject *Matrix61c_get_value(Matrix61c *self, PyObject* args) {
  */
 PyMethodDef Matrix61c_methods[] = {
     /* TODO: YOUR CODE HERE */
+    {"get", (PyCFunction)Matrix61c_get_value, METH_VARARGS, "Get an element's value from a give position."},
+    {"set", Matrix61c_set_value, METH_VARARGS, "Set an element's value from a give position."},
     {NULL, NULL, 0, NULL}
 };
 
@@ -372,6 +530,173 @@ PyMethodDef Matrix61c_methods[] = {
  */
 PyObject *Matrix61c_subscript(Matrix61c* self, PyObject* key) {
     /* TODO: YOUR CODE HERE */
+
+
+    //printf("HELLO tuple %d List %d long %d  slice %d\n", PyTuple_Check(key), PyList_Check(key), PyLong_Check(key), PySlice_Check(key));
+
+    if (key == NULL)
+    {
+      return NULL;
+    }
+    else if (PyLong_Check(key))
+    {
+      PyObject* py_lst;
+      py_lst = PyList_New(self->mat->cols);
+      for(int i = 0; i< self->mat->cols; i++)
+      {
+        PyList_SetItem(py_lst, i, PyFloat_FromDouble(get(self->mat, PyLong_AsLong(key), i)));
+      }
+      return py_lst;
+    }
+    else if (PySlice_Check(key))
+    {
+      Py_ssize_t start;
+      Py_ssize_t step ;
+      Py_ssize_t end ;
+      Py_ssize_t slice_length ;
+      if (PySlice_GetIndicesEx(key, self->mat->rows, &start, &end, &step, &slice_length) == 0)
+      {
+        PyObject * py_lst;
+
+        py_lst = PyList_New(slice_length);
+
+        int row = 0;
+        for (int i = start ; i< end; i+=step)
+        {
+
+          PyList_SetItem(py_lst, row, PyList_New(self->mat->cols));
+          PyObject *curr_row = PyList_GetItem(py_lst, row);
+          row ++;
+          for(int j = 0; j< self->mat->cols; j++)
+          {
+            PyList_SetItem(curr_row, j, PyFloat_FromDouble(get(self->mat, i, j)));
+          }
+        }
+        return py_lst;
+      }
+      else
+      {
+        PyErr_SetString(PyExc_TypeError, "Invalid slice format!");
+        return NULL;
+      }
+    }
+    else if (PyTuple_Check(key))
+    {
+      PyObject *arg1 = NULL;
+      PyObject *arg2 = NULL;
+      if (PyArg_UnpackTuple(key, "args", 2, 2, &arg1, &arg2))
+      {
+        PyObject * py_lst;
+        Py_ssize_t start1;
+        Py_ssize_t step1 ;
+        Py_ssize_t end1 ;
+        Py_ssize_t slice_length1 ;
+        Py_ssize_t start2;
+        Py_ssize_t step2 ;
+        Py_ssize_t end2 ;
+        Py_ssize_t slice_length2 ;
+
+        if (PySlice_Check(arg1))
+        {
+            if (!PySlice_GetIndicesEx(arg1, self->mat->rows, &start1, &end1, &step1, &slice_length1) == 0)
+            {
+              PyErr_SetString(PyExc_TypeError, "Invalid slice format for arg1!");
+              return NULL;
+            }
+        }
+        else if (PyLong_Check(arg1))
+        {
+          slice_length1 = -1;
+          start1 = PyLong_AsLong(arg1);
+        }
+        else
+        {
+          PyErr_SetString(PyExc_TypeError, "Invalid first args in tuple!");
+          return NULL;
+        }
+
+        if (PySlice_Check(arg2))
+        {
+            if (!PySlice_GetIndicesEx(arg2, self->mat->rows, &start2, &end2, &step2, &slice_length2) == 0)
+            {
+              PyErr_SetString(PyExc_TypeError, "Invalid slice format for arg2!");
+              return NULL;
+            }
+        }
+        else if (PyLong_Check(arg2))
+        {
+          slice_length2 = -1;
+          start2 = PyLong_AsLong(arg2);
+        }
+        else
+        {
+          PyErr_SetString(PyExc_TypeError, "Invalid second args in tuple!");
+          return NULL;
+        }
+
+        if (slice_length1 == -1 && slice_length2 == -1)
+        {
+          return PyFloat_FromDouble(get(self->mat, start1, start2));
+        }
+        else if (slice_length1 == -1 && slice_length2 != -1)
+        {
+          py_lst = PyList_New(slice_length2);
+          int col = 0;
+          for (int i =start2; i< end2; i+=step2)
+          {
+            PyList_SetItem(py_lst, col, PyFloat_FromDouble(get(self->mat, start1, i)));
+            col ++;
+          }
+          return py_lst;
+        }
+        else if (slice_length1 != -1 && slice_length2 == -1)
+        {
+          py_lst = PyList_New(slice_length1);
+          int row = 0;
+          for (int i =start1; i< end1; i+=step1)
+          {
+            PyList_SetItem(py_lst, row, PyFloat_FromDouble(get(self->mat, i, start2)));
+            row ++;
+          }
+          return py_lst;
+        }
+        else if (slice_length1 != -1 && slice_length2 != -1)
+        {
+
+
+          py_lst = PyList_New(slice_length1);
+
+          int row = 0;
+          for (int r = start1; r<end1; r+=step1)
+          {
+              PyList_SetItem(py_lst, row, PyList_New(slice_length2));
+              PyObject *curr_row = PyList_GetItem(py_lst, row);
+              int col = 0;
+              for (int c = start2 ; c< end2; c+=step2)
+              {
+                PyList_SetItem(curr_row, col, PyFloat_FromDouble(get(self->mat, r, c)));
+                col ++;
+              }
+              row ++;
+          }
+
+          return py_lst;
+
+
+        }
+        else
+        {
+          PyErr_SetString(PyExc_TypeError, "Something is wrong!");
+          return NULL;
+        }
+      }
+      else
+      {
+          PyErr_SetString(PyExc_TypeError, "Invalid tuple format!");
+          return NULL;
+      }
+    }
+
 }
 
 /*
